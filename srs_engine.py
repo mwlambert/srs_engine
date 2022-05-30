@@ -2,21 +2,23 @@
 """
 Created on Sun Sep 19 10:58:47 2021
 
+Engine for computing the shock responce spectra from a given input pulse.
+Currently only works for a single channel and must be in pandas Dataframe format
+
 @author: m.lambert
 """
 import numpy as np
 import matplotlib.pyplot as plt
-plt.close('all')
 from scipy import integrate
 from scipy import signal
 
 G_MPS = 9.807
 SAVE_PLOTS = False
 
-plt.style.use('classic')
+# plt.style.use('default')
 
 def build_freq_array(start=10, end=10000, oct_steps=12):
-    print('Generating natural frequency array with...\nStart Frequency: {} Hz\nEnd Frequency: {} kHz\nSteps Per Octave: {}\n'.format(start,end,oct_steps) )
+    print('Generating natural frequency array with...\nStart Frequency: {} Hz\nEnd Frequency: {} Hz\nSteps Per Octave: {}\n'.format(start,end,oct_steps) )
     fn_array = [start]
     for i in range(end-start):
         f0 = start * 2**(1/oct_steps)
@@ -34,6 +36,7 @@ class SRS:
         self.name = ''
         
         self.time = data.index.values
+        
         
         # self.input_channel = data.iloc[:].name
         self.input_accel = data.iloc[:,0].values
@@ -363,7 +366,7 @@ class SRS:
 
 
 def create_half_sine(A=1000, T=0.01, num_half_sins=1):
-    length = 0.07
+    length = 0.04
     x = np.arange(0, length, 1e-5)
     fx = A * np.sin(np.pi*x / T)
     fx[x > num_half_sins*T] = 0
@@ -385,33 +388,7 @@ def create_step_input(A=1000, T=0.01):
     
     return x, fx, 'Step Input'
 
-if __name__ == '__main__':
-    import pandas as pd    
-    fn_array = np.array([30,85,250])
-    
-    A = 50
-    T = 0.01
-        
-    x, y, name  = create_half_sine(A=A, T=T, num_half_sins=1)
-    df = pd.DataFrame({'time':x, 'data':y})
-    df=df.set_index('time')
-    srs=SRS(df)
-    srs.name = '{}g {}ms {}'.format(A,T*1000,name)
-   
-    # Kelly & Richman
-    # srs.calc_kellyrichman_srs(fn_array=build_freq_array())
-    # srs.plot_results()
-    # srs.calc_kellyrichman_srs(fn_array=fn_array)
-    # srs.plot_inout_data()
-    
-    # Smallwood
-    srs.calc_smallwood_srs(fn_array=build_freq_array(start=1,end=1000,oct_steps=1))
-    srs.plot_results()
-    srs.calc_smallwood_srs(fn_array=fn_array)
-    srs.plot_inout_data()
-    # srs.plot_srs()
-    # srs.plot_pvss()
-    
+
     
     
     
